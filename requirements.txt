@@ -1,0 +1,6 @@
+python-chess
+numpy
+torch       # Pytorch pour le deep learning
+matplotlib  # Pour des visualisations (optionnel)
+tkinter     # Interface graphique locale (préinstallée sur Python)
+tensorflow
