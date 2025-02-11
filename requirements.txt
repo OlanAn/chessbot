@@ -1,6 +1,8 @@
 python-chess
 numpy
 torch       # Pytorch pour le deep learning
-matplotlib  # Pour des visualisations (optionnel)
-tkinter     # Interface graphique locale (préinstallée sur Python)
+matplotlib  # Pour des visualisations (optionnel)     # Interface graphique locale (préinstallée sur Python)
 tensorflow
+tkinter
+stockfish
+keras

@@ -6,7 +6,9 @@ from collections import deque
 import chess
 import chess.pgn
 import json
+import stockfish
 
+boardStockfish = stockfish.Stockfish()
 
 # Conversion de l'échiquier en état
 def board_to_state(board):
@@ -91,7 +93,10 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
                 action = np.argmax(q_values_legal)
 
             move = legal_moves[action]
-            print(f"Épisode {episode + 1}, Coup {move_count + 1}, Action choisie : {action}, Coup joué : {move}")
+            boardStockfish.make_moves_from_current_position([move])
+            score = boardStockfish.get_evaluation()
+
+            print(f"Épisode {episode + 1}, Coup {move_count + 1}, Action choisie : {action}, Coup joué : {move}, Centipawn : {score}")
 
             # Vérifier et afficher une capture après avoir joué le coup
             captured_piece = board.piece_at(move.to_square)
