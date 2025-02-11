@@ -6,9 +6,9 @@ from collections import deque
 import chess
 import chess.pgn
 import json
-import stockfish
-
-boardStockfish = stockfish.Stockfish()
+import pandas as pd
+import joypy
+from matplotlib import pyplot as plt
 
 # Conversion de l'échiquier en état
 def board_to_state(board):
@@ -67,10 +67,19 @@ def update_q_values(model, target_model, batch, gamma):
 
 all_games = []
 # Boucle d'entraînement avec limite de 100 coups par partie
-def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilon, epsilon_decay, batch_size):
-    max_moves = 100  # Limite maximale de coups par épisode
-
+def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilon, epsilon_decay, batch_size, max_moves, boardStockfish):
+      # Limite maximale de coups par épisode
+    list_cpl = []
+    list_move = []
+    list_color_move = []
+    list_cp = []
+    list_epl = []
+    score_prev = boardStockfish.get_evaluation().get("value")
     for episode in range(num_episodes):
+        
+        cpl = []
+        cp = []
+        white_move = 1
         board = chess.Board()
         state = board_to_state(board)
         done = False
@@ -94,7 +103,23 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
 
             move = legal_moves[action]
             boardStockfish.make_moves_from_current_position([move])
-            score = boardStockfish.get_evaluation()
+            score = boardStockfish.get_evaluation().get("value")
+            
+            if white_move:
+                list_color_move.append("w")
+                #print("Score prev:", score_prev, "Score:", score, "diff: ", str(score - score_prev))
+                list_cpl.append(score - score_prev)
+            else:
+                list_color_move.append("b")
+                #print("Score prev:", score_prev, "Score:", score, "diff: ", str((score - score_prev)*-1))
+                list_cpl.append((score - score_prev)*-1)
+            list_cp.append(score)
+            list_move.append(move)
+            list_epl.append(episode)
+
+
+            score_prev = score
+            white_move *= -1
 
             print(f"Épisode {episode + 1}, Coup {move_count + 1}, Action choisie : {action}, Coup joué : {move}, Centipawn : {score}")
 
@@ -168,13 +193,34 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
             target_model.set_weights(model.get_weights())
 
         print(f"Épisode {episode + 1}/{num_episodes}, Récompense totale : {total_reward}, Exploration : {epsilon:.4f}")
-
+        #list_cpl.append(cpl)
+        #list_cp.append(cp)
         # Exporter les parties à la fin de l'entraînement
     with open("games_log.json", "w") as f:
         json.dump(all_games, f, indent=4)
     print("Toutes les parties ont été enregistrées dans 'games_log.json'.")
 
 
+    df_cp = pd.DataFrame({
+        "move": list_move,
+        "color": list_color_move,
+        "cp":list_cp,
+        "episode":list_epl,
+    })
+    df_cpl = pd.DataFrame({
+        "move": list_move,
+        "color": list_color_move,
+        "cpl":list_cpl,
+        "episode":list_epl,
+    })
+
+    # Create JoyPlot from the DataFrame
+
+    fig, axes = joypy.joyplot(df_cpl, by="episode")
+    for ax in axes:
+       ax.set_xlim(-200, 200)  
+    # Show the plot
+    plt.show()
 
 
 

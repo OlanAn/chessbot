@@ -3,6 +3,7 @@ numpy
 torch       # Pytorch pour le deep learning
 matplotlib  # Pour des visualisations (optionnel)     # Interface graphique locale (préinstallée sur Python)
 tensorflow
-tkinter
+#tkinter
 stockfish
 keras
+joypy

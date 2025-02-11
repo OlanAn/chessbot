@@ -1,7 +1,52 @@
 [
     {
         "episode": 1,
-        "total_reward": 252,
+        "total_reward": 223,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 2,
+        "total_reward": 378,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 3,
+        "total_reward": 429,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 4,
+        "total_reward": -5,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 5,
+        "total_reward": 706,
+        "result": "checkmate"
+    },
+    {
+        "episode": 6,
+        "total_reward": 396,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 7,
+        "total_reward": 363,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 8,
+        "total_reward": 241,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 9,
+        "total_reward": 132,
+        "result": "100_moves_limit"
+    },
+    {
+        "episode": 10,
+        "total_reward": 394,
         "result": "100_moves_limit"
     }
 ]
