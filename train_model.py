@@ -15,8 +15,9 @@ gamma = 0.99
 epsilon = 1.0
 epsilon_decay = 0.95
 batch_size = 10
-num_episodes = 10
+num_episodes = 50
 max_moves = 100
+reward_type = 2 #1: reward per piece move, capture, ...; 2: reward en fonction de la perte de centipawn; 
 
 # Initialisation
 if model_to_load is not None and os.path.isfile(model_to_load):
@@ -42,7 +43,8 @@ train_dql_self_play(model,
                     epsilon_decay, 
                     batch_size, 
                     max_moves, 
-                    boardStockfish)
+                    boardStockfish,
+                    reward_type)
 
 # Sauvegarder le modèle entraîné
 model.save(model_to_save)

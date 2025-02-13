@@ -8,6 +8,7 @@ import chess.pgn
 import json
 import pandas as pd
 import joypy
+import os
 from matplotlib import pyplot as plt
 
 # Conversion de l'échiquier en état
@@ -66,9 +67,9 @@ def update_q_values(model, target_model, batch, gamma):
     model.fit(states, q_values, verbose=0)
 
 all_games = []
-# Boucle d'entraînement avec limite de 100 coups par partie
-def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilon, epsilon_decay, batch_size, max_moves, boardStockfish):
-      # Limite maximale de coups par épisode
+# Boucle d'entraînement
+def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilon, epsilon_decay, batch_size, max_moves, boardStockfish, reward_type):
+
     list_cpl = []
     list_move = []
     list_color_move = []
@@ -102,26 +103,35 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
                 action = np.argmax(q_values_legal)
 
             move = legal_moves[action]
-            boardStockfish.make_moves_from_current_position([move])
-            score = boardStockfish.get_evaluation().get("value")
+            try:
+                boardStockfish.make_moves_from_current_position([move])
+            except ValueError as e:
+                print("Value error")
+                print(board)
+                print("Move:",move)
+                print(e)
+
+            score_curr = boardStockfish.get_evaluation().get("value")
             
             if white_move:
+                score = score_curr - score_prev
                 list_color_move.append("w")
                 #print("Score prev:", score_prev, "Score:", score, "diff: ", str(score - score_prev))
-                list_cpl.append(score - score_prev)
+                list_cpl.append(score_curr - score_prev)
             else:
+                score = (score_curr - score_prev)*-1
                 list_color_move.append("b")
                 #print("Score prev:", score_prev, "Score:", score, "diff: ", str((score - score_prev)*-1))
-                list_cpl.append((score - score_prev)*-1)
-            list_cp.append(score)
+                list_cpl.append((score_curr - score_prev)*-1)
+            list_cp.append(score_curr)
             list_move.append(move)
             list_epl.append(episode)
 
 
-            score_prev = score
+            score_prev = score_curr
             white_move *= -1
 
-            print(f"Épisode {episode + 1}, Coup {move_count + 1}, Action choisie : {action}, Coup joué : {move}, Centipawn : {score}")
+            print(f"Épisode {episode + 1}, Coup {move_count + 1}, Action choisie : {action}, Coup joué : {move}, Centipawn : {score_curr}")
 
             # Vérifier et afficher une capture après avoir joué le coup
             captured_piece = board.piece_at(move.to_square)
@@ -131,37 +141,49 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
                 print(f"Pièce capturée : {captured_piece.symbol()} au coup {move_count + 1}")
 
             # Calculer la récompense
-            if board.is_checkmate():
-                reward = 500
-                done = True
-            elif board.is_stalemate():
-                reward = 300
-                done = True
-            elif move_count >= max_moves:
-                print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
-                done = True  # Force la fin de la partie
-                reward = -200  # Pénalité pour ne pas conclure
-                break  # Sort de la boucle immédiatement
-                print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
-            elif board.is_capture(move) and captured_piece:
-                piece_value = {
-                    chess.PAWN: 1,
-                    chess.KNIGHT: 3,
-                    chess.BISHOP: 3,
-                    chess.ROOK: 5,
-                    chess.QUEEN: 9,
-                }.get(captured_piece.piece_type, 0)
-                reward = 10 * piece_value
-            else:
-                reward = -1
+            if reward_type==1:
+                if board.is_checkmate():
+                    reward = 500
+                    done = True
+                elif board.is_stalemate():
+                    reward = 300
+                    done = True
+                elif move_count >= max_moves:
+                    print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
+                    done = True  # Force la fin de la partie
+                    reward = -200  # Pénalité pour ne pas conclure
+                    break  # Sort de la boucle immédiatement
+                    print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
+                elif board.is_capture(move) and captured_piece:
+                    piece_value = {
+                        chess.PAWN: 1,
+                        chess.KNIGHT: 3,
+                        chess.BISHOP: 3,
+                        chess.ROOK: 5,
+                        chess.QUEEN: 9,
+                    }.get(captured_piece.piece_type, 0)
+                    reward = 10 * piece_value
+                else:
+                    reward = -1
 
-            # Pénalité pour répétitions
-            repetition_count = last_moves.count(move)
-            if repetition_count > 1:
-                reward -= 10 * repetition_count
-            last_moves.append(move)
-            if len(last_moves) > 10:
-                last_moves.pop(0)
+                # Pénalité pour répétitions
+                repetition_count = last_moves.count(move)
+                if repetition_count > 1:
+                    reward -= 10 * repetition_count
+                last_moves.append(move)
+                if len(last_moves) > 10:
+                    last_moves.pop(0)
+            
+            elif reward_type==2:
+                if move_count >= max_moves:
+                    print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
+                    done = True  # Force la fin de la partie
+                    reward = -200  # Pénalité pour ne pas conclure
+                    break  # Sort de la boucle immédiatement
+                    print(f"Limite de {max_moves} coups atteinte. Partie terminée.")
+                reward = score
+
+            
 
             # Suivi de l'état
             next_state = board_to_state(board)
@@ -185,6 +207,9 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
             "result": "checkmate" if board.is_checkmate() else "stalemate" if board.is_stalemate() else "100_moves_limit"
         })
 
+       # game = chess.pgn.Game.from_board(board)
+        #print(game)
+
         # Réduction d'epsilon
         epsilon = max(0.1, epsilon * epsilon_decay)
 
@@ -195,6 +220,12 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
         print(f"Épisode {episode + 1}/{num_episodes}, Récompense totale : {total_reward}, Exploration : {epsilon:.4f}")
         #list_cpl.append(cpl)
         #list_cp.append(cp)
+
+        with open("backend/PGN/reward_"+str(reward_type)+"_PGN"+str(episode)+".txt", "w", encoding="utf-8") as file:
+            file.write(str(chess.pgn.Game.from_board(board)))
+            print("j'ai bien écrit l'épisode", episode)
+        file.close()
+
         # Exporter les parties à la fin de l'entraînement
     with open("games_log.json", "w") as f:
         json.dump(all_games, f, indent=4)
@@ -220,6 +251,7 @@ def train_dql_self_play(model, target_model, memory, num_episodes, gamma, epsilo
     for ax in axes:
        ax.set_xlim(-200, 200)  
     # Show the plot
+    plt.savefig("backend/PGN/distrib_reward_"+str(reward_type)+".png")
     plt.show()
 
 

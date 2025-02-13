@@ -1,0 +1,9 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "?"]
+[Black "?"]
+[Result "0-1"]
+
+1. b3 Nh6 2. Nc3 f6 3. Ne4 Nf7 4. Nxf6+ exf6 5. d4 c5 6. Nh3 Rg8 7. g3 Rh8 8. Bf4 Qe7 9. Bxb8 Ne5 10. Bc7 Qe6 11. a4 Rg8 12. Qc1 Qf5 13. Ra3 Qxc2 14. Bb8 Qxc1# 0-1

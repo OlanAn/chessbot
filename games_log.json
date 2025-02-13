@@ -1,52 +1,52 @@
 [
     {
         "episode": 1,
-        "total_reward": 223,
+        "total_reward": 296,
         "result": "100_moves_limit"
     },
     {
         "episode": 2,
-        "total_reward": 378,
-        "result": "100_moves_limit"
+        "total_reward": 487,
+        "result": "checkmate"
     },
     {
         "episode": 3,
-        "total_reward": 429,
+        "total_reward": 254,
         "result": "100_moves_limit"
     },
     {
         "episode": 4,
-        "total_reward": -5,
+        "total_reward": 334,
         "result": "100_moves_limit"
     },
     {
         "episode": 5,
-        "total_reward": 706,
-        "result": "checkmate"
-    },
-    {
-        "episode": 6,
-        "total_reward": 396,
+        "total_reward": 274,
         "result": "100_moves_limit"
     },
     {
+        "episode": 6,
+        "total_reward": 805,
+        "result": "checkmate"
+    },
+    {
         "episode": 7,
-        "total_reward": 363,
+        "total_reward": 203,
         "result": "100_moves_limit"
     },
     {
         "episode": 8,
-        "total_reward": 241,
+        "total_reward": 358,
         "result": "100_moves_limit"
     },
     {
         "episode": 9,
-        "total_reward": 132,
+        "total_reward": 234,
         "result": "100_moves_limit"
     },
     {
         "episode": 10,
-        "total_reward": 394,
+        "total_reward": 294,
         "result": "100_moves_limit"
     }
 ]
